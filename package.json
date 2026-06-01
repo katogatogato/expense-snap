@@ -1,0 +1,14 @@
+{
+  "name": "expense-snap",
+  "version": "1.0.0",
+  "description": "Snap receipts, track expenses — offline-first PWA with zero backend",
+  "author": "katogatogato",
+  "license": "MIT",
+  "repository": "https://github.com/katogatogato/expense-snap",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

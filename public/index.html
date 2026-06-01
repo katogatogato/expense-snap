@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ExpenseSnap</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0F172A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ExpenseSnap">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Instrument+Serif&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Install Banner -->
+  <div id="install-banner" class="install-banner hidden">
+    <div class="install-content">
+      <span class="install-text">Add ExpenseSnap to your home screen</span>
+      <div class="install-actions">
+        <button id="btn-install" class="install-btn">Install</button>
+        <button id="btn-install-dismiss" class="install-dismiss">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <h1 class="app-title">Expense<span class="title-accent">Snap</span></h1>
+  </header>
+
+  <!-- Main Content -->
+  <main class="tab-container">
+
+    <!-- Dashboard Tab -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="section-header">
+        <h2 class="section-title">Dashboard</h2>
+      </div>
+      <div id="summary-cards" class="summary-cards"></div>
+      <div class="section-header">
+        <h3 class="section-subtitle">Spending by Category</h3>
+      </div>
+      <div id="category-chart" class="chart-container"></div>
+      <div class="section-header">
+        <h3 class="section-subtitle">Recent Expenses</h3>
+      </div>
+      <div id="recent-expenses" class="expense-list"></div>
+    </section>
+
+    <!-- Add Tab -->
+    <section id="tab-add" class="tab-content">
+      <div class="section-header">
+        <h2 id="form-title" class="section-title">New Expense</h2>
+      </div>
+
+      <!-- Receipt Area -->
+      <div class="receipt-area">
+        <div id="receipt-preview" class="receipt-preview">
+          <img src="" alt="Receipt preview">
+          <div class="receipt-placeholder">
+            <div class="receipt-placeholder-icon">📷</div>
+            <p>Attach a receipt photo</p>
+          </div>
+        </div>
+        <div class="receipt-actions">
+          <button id="btn-camera" type="button" class="btn btn-outline receipt-btn">
+            <span class="btn-icon">📸</span> Camera
+          </button>
+          <button id="btn-upload" type="button" class="btn btn-outline receipt-btn">
+            <span class="btn-icon">📁</span> Upload
+          </button>
+          <button id="btn-remove-receipt" type="button" class="btn btn-danger-sm hidden">Remove</button>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form id="expense-form" class="expense-form" autocomplete="off">
+        <div class="form-group">
+          <label for="exp-amount">Amount</label>
+          <div class="input-with-symbol">
+            <span class="input-symbol">$</span>
+            <input type="number" id="exp-amount" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="exp-date">Date</label>
+            <input type="date" id="exp-date" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="exp-category">Category</label>
+            <select id="exp-category" required>
+              <option value="food">🍔 Food</option>
+              <option value="transport">🚗 Transport</option>
+              <option value="shopping">🛍️ Shopping</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="bills">📄 Bills</option>
+              <option value="health">💊 Health</option>
+              <option value="education">📚 Education</option>
+              <option value="other">📌 Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="exp-description">Description</label>
+          <input type="text" id="exp-description" placeholder="e.g. Dinner at Thai place" required>
+        </div>
+
+        <div class="form-group">
+          <label for="exp-notes">Notes <span class="optional">(optional)</span></label>
+          <textarea id="exp-notes" rows="2" placeholder="Any additional details..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-block">
+            <span id="btn-save-text">Save Expense</span>
+          </button>
+          <button type="button" id="btn-cancel-edit" class="btn btn-outline btn-block hidden">Cancel Editing</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- History Tab -->
+    <section id="tab-history" class="tab-content">
+      <div class="section-header">
+        <h2 class="section-title">History</h2>
+        <span id="history-count" class="badge">0 expenses</span>
+      </div>
+
+      <div class="filter-bar">
+        <button id="btn-filter-toggle" class="btn btn-outline btn-sm">⚙ Filters</button>
+      </div>
+
+      <div id="filter-panel" class="filter-panel">
+        <div class="filter-grid">
+          <div class="form-group">
+            <label for="filter-date-from">From</label>
+            <input type="date" id="filter-date-from">
+          </div>
+          <div class="form-group">
+            <label for="filter-date-to">To</label>
+            <input type="date" id="filter-date-to">
+          </div>
+          <div class="form-group">
+            <label for="filter-category">Category</label>
+            <select id="filter-category">
+              <option value="">All Categories</option>
+              <option value="food">🍔 Food</option>
+              <option value="transport">🚗 Transport</option>
+              <option value="shopping">🛍️ Shopping</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="bills">📄 Bills</option>
+              <option value="health">💊 Health</option>
+              <option value="education">📚 Education</option>
+              <option value="other">📌 Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filter-amount-min">Min Amount</label>
+            <input type="number" id="filter-amount-min" step="0.01" min="0" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="filter-amount-max">Max Amount</label>
+            <input type="number" id="filter-amount-max" step="0.01" min="0" placeholder="999.99">
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button id="btn-apply-filter" class="btn btn-primary btn-sm">Apply</button>
+          <button id="btn-clear-filter" class="btn btn-outline btn-sm">Clear</button>
+        </div>
+      </div>
+
+      <div id="expense-list" class="expense-list"></div>
+
+      <button id="btn-load-more" class="btn btn-outline btn-block hidden" style="margin-top:1rem">Load More</button>
+    </section>
+
+    <!-- Settings Tab -->
+    <section id="tab-settings" class="tab-content">
+      <div class="section-header">
+        <h2 class="section-title">Settings</h2>
+      </div>
+
+      <div class="settings-list">
+        <div class="settings-item">
+          <div class="settings-info">
+            <div class="settings-label">Currency</div>
+            <div class="settings-desc">Choose your display currency</div>
+          </div>
+          <select id="settings-currency" class="settings-select">
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+            <option value="JPY">¥ JPY</option>
+            <option value="CAD">C$ CAD</option>
+            <option value="AUD">A$ AUD</option>
+            <option value="INR">₹ INR</option>
+            <option value="BRL">R$ BRL</option>
+            <option value="MXN">MX$ MXN</option>
+            <option value="CHF">CHF CHF</option>
+          </select>
+        </div>
+
+        <div class="settings-item" style="cursor:pointer" id="btn-export">
+          <div class="settings-info">
+            <div class="settings-label">📥 Export to CSV</div>
+            <div class="settings-desc">Download all expenses as a spreadsheet</div>
+          </div>
+          <span class="settings-arrow">→</span>
+        </div>
+
+        <div class="settings-item settings-danger" id="btn-clear-data">
+          <div class="settings-info">
+            <div class="settings-label">🗑️ Clear All Data</div>
+            <div class="settings-desc">Permanently delete all stored expenses</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-about">
+        <div class="about-card">
+          <h3>ExpenseSnap</h3>
+          <p>v1.0.0</p>
+          <p class="about-desc">Snap receipts, track expenses.<br>100% offline, zero backend, your data stays on your device.</p>
+          <p class="about-link"><a href="https://github.com/katogatogato/expense-snap" target="_blank" rel="noopener">github.com/katogatogato/expense-snap</a></p>
+          <p class="about-license">MIT License · katogatogato</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="dashboard" role="tab" aria-label="Dashboard">
+      <span class="tab-icon">📊</span>
+      <span class="tab-label">Dashboard</span>
+    </button>
+    <button class="tab-btn" data-tab="add" role="tab" aria-label="Add expense">
+      <span class="tab-icon">➕</span>
+      <span class="tab-label">Add</span>
+    </button>
+    <button class="tab-btn" data-tab="history" role="tab" aria-label="History">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">History</span>
+    </button>
+    <button class="tab-btn" data-tab="settings" role="tab" aria-label="Settings">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">Settings</span>
+    </button>
+  </nav>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

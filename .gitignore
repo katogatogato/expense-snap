@@ -1,0 +1,5 @@
+node_modules/
+public/js/
+*.js.map
+.DS_Store
+thumbs.db
