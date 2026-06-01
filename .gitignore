@@ -3,3 +3,5 @@ public/js/
 *.js.map
 .DS_Store
 thumbs.db
+.env
+.env.local
